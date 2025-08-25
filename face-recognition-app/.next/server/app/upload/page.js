@@ -2,7 +2,7 @@ var R=require("../../chunks/ssr/[turbopack]_runtime.js")("server/app/upload/page
 R.c("server/chunks/ssr/01a51_0e3cea7b._.js")
 R.c("server/chunks/ssr/[root-of-the-server]__e8a2741f._.js")
 R.c("server/chunks/ssr/Desktop_face-recognition-project_face-recognition-app_app_4d194f34._.js")
-R.c("server/chunks/ssr/[root-of-the-server]__37748728._.js")
+R.c("server/chunks/ssr/[root-of-the-server]__e44b5e82._.js")
 R.c("server/chunks/ssr/01a51_next_dist_client_components_7198ca73._.js")
 R.c("server/chunks/ssr/01a51_next_dist_client_components_builtin_forbidden_67a5054e.js")
 R.c("server/chunks/ssr/01a51_next_dist_client_components_builtin_unauthorized_f695d5f2.js")

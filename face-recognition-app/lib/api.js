@@ -1,0 +1,49 @@
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
+
+export const api = {
+  // Upload a new person to the system
+  async registerPerson(name, imageFile) {
+    const formData = new FormData();
+    formData.append('name', name);
+    formData.append('image', imageFile);
+
+    const response = await fetch(`${API_BASE_URL}/register`, {
+      method: 'POST',
+      body: formData,
+    });
+
+    if (!response.ok) {
+      throw new Error('Failed to register person');
+    }
+
+    return await response.json();
+  },
+
+  // Detect face from webcam image
+  async detectFace(imageBlob) {
+    const formData = new FormData();
+    formData.append('image', imageBlob);
+
+    const response = await fetch(`${API_BASE_URL}/detect`, {
+      method: 'POST',
+      body: formData,
+    });
+
+    if (!response.ok) {
+      throw new Error('Failed to detect face');
+    }
+
+    return await response.json();
+  },
+
+  // Get video stream for real-time detection
+  getVideoStream() {
+    return `${API_BASE_URL}/video_feed`;
+  },
+
+  // Health check
+  async healthCheck() {
+    const response = await fetch(`${API_BASE_URL}/health`);
+    return response.ok;
+  }
+};
