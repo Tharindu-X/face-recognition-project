@@ -485,6 +485,10 @@
     display: grid;
   }
 
+  .table {
+    display: table;
+  }
+
   .h-10 {
     height: calc(var(--spacing) * 10);
   }
@@ -609,10 +613,6 @@
 
   .bg-gray-100 {
     background-color: var(--color-gray-100);
-  }
-
-  .bg-white {
-    background-color: var(--color-white);
   }
 
   .p-2 {

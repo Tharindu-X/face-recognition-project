@@ -2,7 +2,7 @@ import os
 import cloudinary
 import cloudinary.api
 from milvus_client import insert_face
-from face_recognition import get_face_embedding
+from face_embeddings import get_face_embedding
 
 # Configure Cloudinary using environment variables
 cloudinary.config(
