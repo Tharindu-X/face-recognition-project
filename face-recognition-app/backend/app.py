@@ -1,10 +1,18 @@
-from flask import Flask, render_template, Response
+from flask import Flask, render_template, Response, request, jsonify
+from flask_cors import CORS
 import cv2
 from face_recognition import get_face_embedding
 from milvus_client import search_face
+from milvus_client import insert_face
+from milvus_client import list_faces
+from face_embeddings import get_face_embedding as get_file_embedding
+import tempfile
+import os
 import numpy as np
 
 app = Flask(__name__)
+CORS(app)
+
 cap = cv2.VideoCapture(0)
 
 def gen_frames():
@@ -34,6 +42,71 @@ def gen_frames():
 def video_feed():
     return Response(gen_frames(),
                     mimetype='multipart/x-mixed-replace; boundary=frame')
+
+@app.route('/health')
+def health():
+    return jsonify({"status": "ok"})
+
+@app.route('/faces')
+def faces():
+    try:
+        faces = list_faces()
+        names = [f.get('name') for f in faces] if faces else []
+        return jsonify({"count": len(names), "names": names})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+@app.route('/register', methods=['POST'])
+def register():
+    name = request.form.get('name')
+    image_file = request.files.get('image')
+    if not name or not image_file:
+        return jsonify({"error": "name and image are required"}), 400
+
+    tmp = tempfile.NamedTemporaryFile(delete=False, suffix=".jpg")
+    try:
+        image_file.save(tmp.name)
+        embedding = get_file_embedding(tmp.name)
+        # No cloud storage wired here; store empty image_url
+        insert_face(name=name, image_url="", embedding=embedding)
+        return jsonify({"status": "ok", "name": name})
+    finally:
+        try:
+            os.unlink(tmp.name)
+        except Exception:
+            pass
+@app.route('/detect', methods=['POST'])
+def detect():
+    image_file = request.files.get('image')
+    if not image_file:
+        return jsonify({"error": "image is required"}), 400
+
+    tmp = tempfile.NamedTemporaryFile(delete=False, suffix=".jpg")
+    try:
+        image_file.save(tmp.name)
+        embedding = get_file_embedding(tmp.name)  # already normalized
+        match = search_face(embedding)
+
+        if match:
+            score = match.get("distance")  # cosine similarity (higher = better)
+            threshold = 0.35  # tweak for your use-case
+
+            if score < threshold:
+                return jsonify({"match": False, "score": score}), 200
+
+            return jsonify({
+                "match": True,
+                "name": match.get("name"),
+                "confidence": round(score * 100, 2),  # scale 0-100%
+                "image": match.get("image"),
+            }), 200
+
+        return jsonify({"match": False}), 200
+    finally:
+        try:
+            os.unlink(tmp.name)
+        except Exception:
+            pass
 
 @app.route('/')
 def index():

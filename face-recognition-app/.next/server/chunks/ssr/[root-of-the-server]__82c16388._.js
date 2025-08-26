@@ -156,7 +156,13 @@ function Home() {
                 canvas.toBlob(async (blob)=>{
                     try {
                         const result = await __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$face$2d$recognition$2d$project$2f$face$2d$recognition$2d$app$2f$lib$2f$api$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["api"].detectFace(blob);
-                        setDetectionResult(`Person identified: ${result.name} (${result.confidence}% confidence)`);
+                        if (result?.match) {
+                            const name = result.name ?? "Unknown";
+                            const confidence = result.confidence ?? 0;
+                            setDetectionResult(`Person identified: ${name} (${confidence}% confidence)`);
+                        } else {
+                            setDetectionResult("No matching person found in database");
+                        }
                     } catch (error) {
                         setDetectionResult("No matching person found in database");
                     }
@@ -193,17 +199,17 @@ function Home() {
                                                 d: "M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
                                             }, void 0, false, {
                                                 fileName: "[project]/Desktop/face-recognition-project/face-recognition-app/app/page.js",
-                                                lineNumber: 130,
+                                                lineNumber: 136,
                                                 columnNumber: 19
                                             }, this)
                                         }, void 0, false, {
                                             fileName: "[project]/Desktop/face-recognition-project/face-recognition-app/app/page.js",
-                                            lineNumber: 129,
+                                            lineNumber: 135,
                                             columnNumber: 17
                                         }, this)
                                     }, void 0, false, {
                                         fileName: "[project]/Desktop/face-recognition-project/face-recognition-app/app/page.js",
-                                        lineNumber: 128,
+                                        lineNumber: 134,
                                         columnNumber: 15
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$face$2d$recognition$2d$project$2f$face$2d$recognition$2d$app$2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("h1", {
@@ -211,13 +217,13 @@ function Home() {
                                         children: "Face Recognition"
                                     }, void 0, false, {
                                         fileName: "[project]/Desktop/face-recognition-project/face-recognition-app/app/page.js",
-                                        lineNumber: 133,
+                                        lineNumber: 139,
                                         columnNumber: 15
                                     }, this)
                                 ]
                             }, void 0, true, {
                                 fileName: "[project]/Desktop/face-recognition-project/face-recognition-app/app/page.js",
-                                lineNumber: 127,
+                                lineNumber: 133,
                                 columnNumber: 13
                             }, this),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$face$2d$recognition$2d$project$2f$face$2d$recognition$2d$app$2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -225,23 +231,23 @@ function Home() {
                                 children: "AI-Powered Face Detection & Recognition"
                             }, void 0, false, {
                                 fileName: "[project]/Desktop/face-recognition-project/face-recognition-app/app/page.js",
-                                lineNumber: 137,
+                                lineNumber: 143,
                                 columnNumber: 13
                             }, this)
                         ]
                     }, void 0, true, {
                         fileName: "[project]/Desktop/face-recognition-project/face-recognition-app/app/page.js",
-                        lineNumber: 126,
+                        lineNumber: 132,
                         columnNumber: 11
                     }, this)
                 }, void 0, false, {
                     fileName: "[project]/Desktop/face-recognition-project/face-recognition-app/app/page.js",
-                    lineNumber: 125,
+                    lineNumber: 131,
                     columnNumber: 9
                 }, this)
             }, void 0, false, {
                 fileName: "[project]/Desktop/face-recognition-project/face-recognition-app/app/page.js",
-                lineNumber: 124,
+                lineNumber: 130,
                 columnNumber: 7
             }, this),
             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$face$2d$recognition$2d$project$2f$face$2d$recognition$2d$app$2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("main", {
@@ -260,7 +266,7 @@ function Home() {
                                             children: "Register New Person"
                                         }, void 0, false, {
                                             fileName: "[project]/Desktop/face-recognition-project/face-recognition-app/app/page.js",
-                                            lineNumber: 151,
+                                            lineNumber: 157,
                                             columnNumber: 15
                                         }, this),
                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$face$2d$recognition$2d$project$2f$face$2d$recognition$2d$app$2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -268,13 +274,13 @@ function Home() {
                                             children: "Upload a photo and enter the person's name to register them in our system"
                                         }, void 0, false, {
                                             fileName: "[project]/Desktop/face-recognition-project/face-recognition-app/app/page.js",
-                                            lineNumber: 152,
+                                            lineNumber: 158,
                                             columnNumber: 15
                                         }, this)
                                     ]
                                 }, void 0, true, {
                                     fileName: "[project]/Desktop/face-recognition-project/face-recognition-app/app/page.js",
-                                    lineNumber: 150,
+                                    lineNumber: 156,
                                     columnNumber: 13
                                 }, this),
                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$face$2d$recognition$2d$project$2f$face$2d$recognition$2d$app$2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -287,7 +293,7 @@ function Home() {
                                                     children: "Full Name"
                                                 }, void 0, false, {
                                                     fileName: "[project]/Desktop/face-recognition-project/face-recognition-app/app/page.js",
-                                                    lineNumber: 158,
+                                                    lineNumber: 164,
                                                     columnNumber: 17
                                                 }, this),
                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$face$2d$recognition$2d$project$2f$face$2d$recognition$2d$app$2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("input", {
@@ -298,13 +304,13 @@ function Home() {
                                                     onChange: (e)=>setName(e.target.value)
                                                 }, void 0, false, {
                                                     fileName: "[project]/Desktop/face-recognition-project/face-recognition-app/app/page.js",
-                                                    lineNumber: 161,
+                                                    lineNumber: 167,
                                                     columnNumber: 17
                                                 }, this)
                                             ]
                                         }, void 0, true, {
                                             fileName: "[project]/Desktop/face-recognition-project/face-recognition-app/app/page.js",
-                                            lineNumber: 157,
+                                            lineNumber: 163,
                                             columnNumber: 15
                                         }, this),
                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$face$2d$recognition$2d$project$2f$face$2d$recognition$2d$app$2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -314,7 +320,7 @@ function Home() {
                                                     children: "Profile Photo"
                                                 }, void 0, false, {
                                                     fileName: "[project]/Desktop/face-recognition-project/face-recognition-app/app/page.js",
-                                                    lineNumber: 172,
+                                                    lineNumber: 178,
                                                     columnNumber: 17
                                                 }, this),
                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$face$2d$recognition$2d$project$2f$face$2d$recognition$2d$app$2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -328,7 +334,7 @@ function Home() {
                                                             onChange: (e)=>setFile(e.target.files[0])
                                                         }, void 0, false, {
                                                             fileName: "[project]/Desktop/face-recognition-project/face-recognition-app/app/page.js",
-                                                            lineNumber: 176,
+                                                            lineNumber: 182,
                                                             columnNumber: 19
                                                         }, this),
                                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$face$2d$recognition$2d$project$2f$face$2d$recognition$2d$app$2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("label", {
@@ -349,12 +355,12 @@ function Home() {
                                                                             strokeLinejoin: "round"
                                                                         }, void 0, false, {
                                                                             fileName: "[project]/Desktop/face-recognition-project/face-recognition-app/app/page.js",
-                                                                            lineNumber: 186,
+                                                                            lineNumber: 192,
                                                                             columnNumber: 25
                                                                         }, this)
                                                                     }, void 0, false, {
                                                                         fileName: "[project]/Desktop/face-recognition-project/face-recognition-app/app/page.js",
-                                                                        lineNumber: 185,
+                                                                        lineNumber: 191,
                                                                         columnNumber: 23
                                                                     }, this),
                                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$face$2d$recognition$2d$project$2f$face$2d$recognition$2d$app$2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -365,7 +371,7 @@ function Home() {
                                                                                 children: "Click to upload"
                                                                             }, void 0, false, {
                                                                                 fileName: "[project]/Desktop/face-recognition-project/face-recognition-app/app/page.js",
-                                                                                lineNumber: 189,
+                                                                                lineNumber: 195,
                                                                                 columnNumber: 25
                                                                             }, this),
                                                                             " ",
@@ -373,7 +379,7 @@ function Home() {
                                                                         ]
                                                                     }, void 0, true, {
                                                                         fileName: "[project]/Desktop/face-recognition-project/face-recognition-app/app/page.js",
-                                                                        lineNumber: 188,
+                                                                        lineNumber: 194,
                                                                         columnNumber: 23
                                                                     }, this),
                                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$face$2d$recognition$2d$project$2f$face$2d$recognition$2d$app$2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -381,24 +387,24 @@ function Home() {
                                                                         children: "PNG, JPG, GIF up to 10MB"
                                                                     }, void 0, false, {
                                                                         fileName: "[project]/Desktop/face-recognition-project/face-recognition-app/app/page.js",
-                                                                        lineNumber: 194,
+                                                                        lineNumber: 200,
                                                                         columnNumber: 23
                                                                     }, this)
                                                                 ]
                                                             }, void 0, true, {
                                                                 fileName: "[project]/Desktop/face-recognition-project/face-recognition-app/app/page.js",
-                                                                lineNumber: 184,
+                                                                lineNumber: 190,
                                                                 columnNumber: 21
                                                             }, this)
                                                         }, void 0, false, {
                                                             fileName: "[project]/Desktop/face-recognition-project/face-recognition-app/app/page.js",
-                                                            lineNumber: 183,
+                                                            lineNumber: 189,
                                                             columnNumber: 19
                                                         }, this)
                                                     ]
                                                 }, void 0, true, {
                                                     fileName: "[project]/Desktop/face-recognition-project/face-recognition-app/app/page.js",
-                                                    lineNumber: 175,
+                                                    lineNumber: 181,
                                                     columnNumber: 17
                                                 }, this),
                                                 file && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$face$2d$recognition$2d$project$2f$face$2d$recognition$2d$app$2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -409,13 +415,13 @@ function Home() {
                                                     ]
                                                 }, void 0, true, {
                                                     fileName: "[project]/Desktop/face-recognition-project/face-recognition-app/app/page.js",
-                                                    lineNumber: 199,
+                                                    lineNumber: 205,
                                                     columnNumber: 19
                                                 }, this)
                                             ]
                                         }, void 0, true, {
                                             fileName: "[project]/Desktop/face-recognition-project/face-recognition-app/app/page.js",
-                                            lineNumber: 171,
+                                            lineNumber: 177,
                                             columnNumber: 15
                                         }, this),
                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$face$2d$recognition$2d$project$2f$face$2d$recognition$2d$app$2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
@@ -440,7 +446,7 @@ function Home() {
                                                                 strokeWidth: "4"
                                                             }, void 0, false, {
                                                                 fileName: "[project]/Desktop/face-recognition-project/face-recognition-app/app/page.js",
-                                                                lineNumber: 214,
+                                                                lineNumber: 220,
                                                                 columnNumber: 23
                                                             }, this),
                                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$face$2d$recognition$2d$project$2f$face$2d$recognition$2d$app$2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("path", {
@@ -449,25 +455,25 @@ function Home() {
                                                                 d: "M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
                                                             }, void 0, false, {
                                                                 fileName: "[project]/Desktop/face-recognition-project/face-recognition-app/app/page.js",
-                                                                lineNumber: 215,
+                                                                lineNumber: 221,
                                                                 columnNumber: 23
                                                             }, this)
                                                         ]
                                                     }, void 0, true, {
                                                         fileName: "[project]/Desktop/face-recognition-project/face-recognition-app/app/page.js",
-                                                        lineNumber: 213,
+                                                        lineNumber: 219,
                                                         columnNumber: 21
                                                     }, this),
                                                     "Uploading..."
                                                 ]
                                             }, void 0, true, {
                                                 fileName: "[project]/Desktop/face-recognition-project/face-recognition-app/app/page.js",
-                                                lineNumber: 212,
+                                                lineNumber: 218,
                                                 columnNumber: 19
                                             }, this) : "Register Person"
                                         }, void 0, false, {
                                             fileName: "[project]/Desktop/face-recognition-project/face-recognition-app/app/page.js",
-                                            lineNumber: 206,
+                                            lineNumber: 212,
                                             columnNumber: 15
                                         }, this),
                                         uploadSuccess && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$face$2d$recognition$2d$project$2f$face$2d$recognition$2d$app$2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -485,12 +491,12 @@ function Home() {
                                                             clipRule: "evenodd"
                                                         }, void 0, false, {
                                                             fileName: "[project]/Desktop/face-recognition-project/face-recognition-app/app/page.js",
-                                                            lineNumber: 229,
+                                                            lineNumber: 235,
                                                             columnNumber: 23
                                                         }, this)
                                                     }, void 0, false, {
                                                         fileName: "[project]/Desktop/face-recognition-project/face-recognition-app/app/page.js",
-                                                        lineNumber: 228,
+                                                        lineNumber: 234,
                                                         columnNumber: 21
                                                     }, this),
                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$face$2d$recognition$2d$project$2f$face$2d$recognition$2d$app$2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -501,7 +507,7 @@ function Home() {
                                                                 children: "Registration successful!"
                                                             }, void 0, false, {
                                                                 fileName: "[project]/Desktop/face-recognition-project/face-recognition-app/app/page.js",
-                                                                lineNumber: 232,
+                                                                lineNumber: 238,
                                                                 columnNumber: 23
                                                             }, this),
                                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$face$2d$recognition$2d$project$2f$face$2d$recognition$2d$app$2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -509,36 +515,36 @@ function Home() {
                                                                 children: "The person has been registered in our system."
                                                             }, void 0, false, {
                                                                 fileName: "[project]/Desktop/face-recognition-project/face-recognition-app/app/page.js",
-                                                                lineNumber: 235,
+                                                                lineNumber: 241,
                                                                 columnNumber: 23
                                                             }, this)
                                                         ]
                                                     }, void 0, true, {
                                                         fileName: "[project]/Desktop/face-recognition-project/face-recognition-app/app/page.js",
-                                                        lineNumber: 231,
+                                                        lineNumber: 237,
                                                         columnNumber: 21
                                                     }, this)
                                                 ]
                                             }, void 0, true, {
                                                 fileName: "[project]/Desktop/face-recognition-project/face-recognition-app/app/page.js",
-                                                lineNumber: 227,
+                                                lineNumber: 233,
                                                 columnNumber: 19
                                             }, this)
                                         }, void 0, false, {
                                             fileName: "[project]/Desktop/face-recognition-project/face-recognition-app/app/page.js",
-                                            lineNumber: 226,
+                                            lineNumber: 232,
                                             columnNumber: 17
                                         }, this)
                                     ]
                                 }, void 0, true, {
                                     fileName: "[project]/Desktop/face-recognition-project/face-recognition-app/app/page.js",
-                                    lineNumber: 155,
+                                    lineNumber: 161,
                                     columnNumber: 13
                                 }, this)
                             ]
                         }, void 0, true, {
                             fileName: "[project]/Desktop/face-recognition-project/face-recognition-app/app/page.js",
-                            lineNumber: 149,
+                            lineNumber: 155,
                             columnNumber: 11
                         }, this),
                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$face$2d$recognition$2d$project$2f$face$2d$recognition$2d$app$2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -552,7 +558,7 @@ function Home() {
                                             children: "Face Detection"
                                         }, void 0, false, {
                                             fileName: "[project]/Desktop/face-recognition-project/face-recognition-app/app/page.js",
-                                            lineNumber: 248,
+                                            lineNumber: 254,
                                             columnNumber: 15
                                         }, this),
                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$face$2d$recognition$2d$project$2f$face$2d$recognition$2d$app$2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -560,13 +566,13 @@ function Home() {
                                             children: "Use your webcam to detect and identify registered persons"
                                         }, void 0, false, {
                                             fileName: "[project]/Desktop/face-recognition-project/face-recognition-app/app/page.js",
-                                            lineNumber: 249,
+                                            lineNumber: 255,
                                             columnNumber: 15
                                         }, this)
                                     ]
                                 }, void 0, true, {
                                     fileName: "[project]/Desktop/face-recognition-project/face-recognition-app/app/page.js",
-                                    lineNumber: 247,
+                                    lineNumber: 253,
                                     columnNumber: 13
                                 }, this),
                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$face$2d$recognition$2d$project$2f$face$2d$recognition$2d$app$2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -584,7 +590,7 @@ function Home() {
                                                         className: "w-full h-full object-cover"
                                                     }, void 0, false, {
                                                         fileName: "[project]/Desktop/face-recognition-project/face-recognition-app/app/page.js",
-                                                        lineNumber: 257,
+                                                        lineNumber: 263,
                                                         columnNumber: 21
                                                     }, this) : /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$face$2d$recognition$2d$project$2f$face$2d$recognition$2d$app$2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
                                                         className: "text-center text-gray-500",
@@ -601,30 +607,30 @@ function Home() {
                                                                     d: "M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"
                                                                 }, void 0, false, {
                                                                     fileName: "[project]/Desktop/face-recognition-project/face-recognition-app/app/page.js",
-                                                                    lineNumber: 266,
+                                                                    lineNumber: 272,
                                                                     columnNumber: 25
                                                                 }, this)
                                                             }, void 0, false, {
                                                                 fileName: "[project]/Desktop/face-recognition-project/face-recognition-app/app/page.js",
-                                                                lineNumber: 265,
+                                                                lineNumber: 271,
                                                                 columnNumber: 23
                                                             }, this),
                                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$face$2d$recognition$2d$project$2f$face$2d$recognition$2d$app$2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
                                                                 children: 'Click "Start Detection" to activate webcam'
                                                             }, void 0, false, {
                                                                 fileName: "[project]/Desktop/face-recognition-project/face-recognition-app/app/page.js",
-                                                                lineNumber: 268,
+                                                                lineNumber: 274,
                                                                 columnNumber: 23
                                                             }, this)
                                                         ]
                                                     }, void 0, true, {
                                                         fileName: "[project]/Desktop/face-recognition-project/face-recognition-app/app/page.js",
-                                                        lineNumber: 264,
+                                                        lineNumber: 270,
                                                         columnNumber: 21
                                                     }, this)
                                                 }, void 0, false, {
                                                     fileName: "[project]/Desktop/face-recognition-project/face-recognition-app/app/page.js",
-                                                    lineNumber: 255,
+                                                    lineNumber: 261,
                                                     columnNumber: 17
                                                 }, this),
                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$face$2d$recognition$2d$project$2f$face$2d$recognition$2d$app$2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("canvas", {
@@ -632,13 +638,13 @@ function Home() {
                                                     className: "hidden"
                                                 }, void 0, false, {
                                                     fileName: "[project]/Desktop/face-recognition-project/face-recognition-app/app/page.js",
-                                                    lineNumber: 272,
+                                                    lineNumber: 278,
                                                     columnNumber: 17
                                                 }, this)
                                             ]
                                         }, void 0, true, {
                                             fileName: "[project]/Desktop/face-recognition-project/face-recognition-app/app/page.js",
-                                            lineNumber: 254,
+                                            lineNumber: 260,
                                             columnNumber: 15
                                         }, this),
                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$face$2d$recognition$2d$project$2f$face$2d$recognition$2d$app$2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -659,19 +665,19 @@ function Home() {
                                                             d: "M14.828 14.828a4 4 0 01-5.656 0M9 10h1m4 0h1m-6 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
                                                         }, void 0, false, {
                                                             fileName: "[project]/Desktop/face-recognition-project/face-recognition-app/app/page.js",
-                                                            lineNumber: 283,
+                                                            lineNumber: 289,
                                                             columnNumber: 23
                                                         }, this)
                                                     }, void 0, false, {
                                                         fileName: "[project]/Desktop/face-recognition-project/face-recognition-app/app/page.js",
-                                                        lineNumber: 282,
+                                                        lineNumber: 288,
                                                         columnNumber: 21
                                                     }, this),
                                                     "Start Detection"
                                                 ]
                                             }, void 0, true, {
                                                 fileName: "[project]/Desktop/face-recognition-project/face-recognition-app/app/page.js",
-                                                lineNumber: 278,
+                                                lineNumber: 284,
                                                 columnNumber: 19
                                             }, this) : /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$face$2d$recognition$2d$project$2f$face$2d$recognition$2d$app$2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$face$2d$recognition$2d$project$2f$face$2d$recognition$2d$app$2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["Fragment"], {
                                                 children: [
@@ -692,7 +698,7 @@ function Home() {
                                                                         d: "M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"
                                                                     }, void 0, false, {
                                                                         fileName: "[project]/Desktop/face-recognition-project/face-recognition-app/app/page.js",
-                                                                        lineNumber: 294,
+                                                                        lineNumber: 300,
                                                                         columnNumber: 25
                                                                     }, this),
                                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$face$2d$recognition$2d$project$2f$face$2d$recognition$2d$app$2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("path", {
@@ -702,20 +708,20 @@ function Home() {
                                                                         d: "M15 13a3 3 0 11-6 0 3 3 0 016 0z"
                                                                     }, void 0, false, {
                                                                         fileName: "[project]/Desktop/face-recognition-project/face-recognition-app/app/page.js",
-                                                                        lineNumber: 295,
+                                                                        lineNumber: 301,
                                                                         columnNumber: 25
                                                                     }, this)
                                                                 ]
                                                             }, void 0, true, {
                                                                 fileName: "[project]/Desktop/face-recognition-project/face-recognition-app/app/page.js",
-                                                                lineNumber: 293,
+                                                                lineNumber: 299,
                                                                 columnNumber: 23
                                                             }, this),
                                                             "Capture & Detect"
                                                         ]
                                                     }, void 0, true, {
                                                         fileName: "[project]/Desktop/face-recognition-project/face-recognition-app/app/page.js",
-                                                        lineNumber: 289,
+                                                        lineNumber: 295,
                                                         columnNumber: 21
                                                     }, this),
                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$face$2d$recognition$2d$project$2f$face$2d$recognition$2d$app$2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
@@ -734,26 +740,26 @@ function Home() {
                                                                     d: "M6 18L18 6M6 6l12 12"
                                                                 }, void 0, false, {
                                                                     fileName: "[project]/Desktop/face-recognition-project/face-recognition-app/app/page.js",
-                                                                    lineNumber: 304,
+                                                                    lineNumber: 310,
                                                                     columnNumber: 25
                                                                 }, this)
                                                             }, void 0, false, {
                                                                 fileName: "[project]/Desktop/face-recognition-project/face-recognition-app/app/page.js",
-                                                                lineNumber: 303,
+                                                                lineNumber: 309,
                                                                 columnNumber: 23
                                                             }, this),
                                                             "Stop"
                                                         ]
                                                     }, void 0, true, {
                                                         fileName: "[project]/Desktop/face-recognition-project/face-recognition-app/app/page.js",
-                                                        lineNumber: 299,
+                                                        lineNumber: 305,
                                                         columnNumber: 21
                                                     }, this)
                                                 ]
                                             }, void 0, true)
                                         }, void 0, false, {
                                             fileName: "[project]/Desktop/face-recognition-project/face-recognition-app/app/page.js",
-                                            lineNumber: 276,
+                                            lineNumber: 282,
                                             columnNumber: 15
                                         }, this),
                                         detectionResult && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$face$2d$recognition$2d$project$2f$face$2d$recognition$2d$app$2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -771,12 +777,12 @@ function Home() {
                                                             clipRule: "evenodd"
                                                         }, void 0, false, {
                                                             fileName: "[project]/Desktop/face-recognition-project/face-recognition-app/app/page.js",
-                                                            lineNumber: 317,
+                                                            lineNumber: 323,
                                                             columnNumber: 23
                                                         }, this)
                                                     }, void 0, false, {
                                                         fileName: "[project]/Desktop/face-recognition-project/face-recognition-app/app/page.js",
-                                                        lineNumber: 316,
+                                                        lineNumber: 322,
                                                         columnNumber: 21
                                                     }, this),
                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$face$2d$recognition$2d$project$2f$face$2d$recognition$2d$app$2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -787,7 +793,7 @@ function Home() {
                                                                 children: "Detection Result"
                                                             }, void 0, false, {
                                                                 fileName: "[project]/Desktop/face-recognition-project/face-recognition-app/app/page.js",
-                                                                lineNumber: 320,
+                                                                lineNumber: 326,
                                                                 columnNumber: 23
                                                             }, this),
                                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$face$2d$recognition$2d$project$2f$face$2d$recognition$2d$app$2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -795,47 +801,47 @@ function Home() {
                                                                 children: detectionResult
                                                             }, void 0, false, {
                                                                 fileName: "[project]/Desktop/face-recognition-project/face-recognition-app/app/page.js",
-                                                                lineNumber: 323,
+                                                                lineNumber: 329,
                                                                 columnNumber: 23
                                                             }, this)
                                                         ]
                                                     }, void 0, true, {
                                                         fileName: "[project]/Desktop/face-recognition-project/face-recognition-app/app/page.js",
-                                                        lineNumber: 319,
+                                                        lineNumber: 325,
                                                         columnNumber: 21
                                                     }, this)
                                                 ]
                                             }, void 0, true, {
                                                 fileName: "[project]/Desktop/face-recognition-project/face-recognition-app/app/page.js",
-                                                lineNumber: 315,
+                                                lineNumber: 321,
                                                 columnNumber: 19
                                             }, this)
                                         }, void 0, false, {
                                             fileName: "[project]/Desktop/face-recognition-project/face-recognition-app/app/page.js",
-                                            lineNumber: 314,
+                                            lineNumber: 320,
                                             columnNumber: 17
                                         }, this)
                                     ]
                                 }, void 0, true, {
                                     fileName: "[project]/Desktop/face-recognition-project/face-recognition-app/app/page.js",
-                                    lineNumber: 252,
+                                    lineNumber: 258,
                                     columnNumber: 13
                                 }, this)
                             ]
                         }, void 0, true, {
                             fileName: "[project]/Desktop/face-recognition-project/face-recognition-app/app/page.js",
-                            lineNumber: 246,
+                            lineNumber: 252,
                             columnNumber: 11
                         }, this)
                     ]
                 }, void 0, true, {
                     fileName: "[project]/Desktop/face-recognition-project/face-recognition-app/app/page.js",
-                    lineNumber: 146,
+                    lineNumber: 152,
                     columnNumber: 9
                 }, this)
             }, void 0, false, {
                 fileName: "[project]/Desktop/face-recognition-project/face-recognition-app/app/page.js",
-                lineNumber: 145,
+                lineNumber: 151,
                 columnNumber: 7
             }, this),
             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$face$2d$recognition$2d$project$2f$face$2d$recognition$2d$app$2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("footer", {
@@ -848,28 +854,28 @@ function Home() {
                             children: "© 2024 Face Recognition System. Powered by AI Technology."
                         }, void 0, false, {
                             fileName: "[project]/Desktop/face-recognition-project/face-recognition-app/app/page.js",
-                            lineNumber: 339,
+                            lineNumber: 345,
                             columnNumber: 13
                         }, this)
                     }, void 0, false, {
                         fileName: "[project]/Desktop/face-recognition-project/face-recognition-app/app/page.js",
-                        lineNumber: 338,
+                        lineNumber: 344,
                         columnNumber: 11
                     }, this)
                 }, void 0, false, {
                     fileName: "[project]/Desktop/face-recognition-project/face-recognition-app/app/page.js",
-                    lineNumber: 337,
+                    lineNumber: 343,
                     columnNumber: 9
                 }, this)
             }, void 0, false, {
                 fileName: "[project]/Desktop/face-recognition-project/face-recognition-app/app/page.js",
-                lineNumber: 336,
+                lineNumber: 342,
                 columnNumber: 7
             }, this)
         ]
     }, void 0, true, {
         fileName: "[project]/Desktop/face-recognition-project/face-recognition-app/app/page.js",
-        lineNumber: 122,
+        lineNumber: 128,
         columnNumber: 5
     }, this);
 }

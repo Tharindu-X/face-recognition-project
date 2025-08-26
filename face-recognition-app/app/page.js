@@ -107,7 +107,13 @@ export default function Home() {
         canvas.toBlob(async (blob) => {
           try {
             const result = await api.detectFace(blob);
-            setDetectionResult(`Person identified: ${result.name} (${result.confidence}% confidence)`);
+            if (result?.match) {
+              const name = result.name ?? "Unknown";
+              const confidence = result.confidence ?? 0;
+              setDetectionResult(`Person identified: ${name} (${confidence}% confidence)`);
+            } else {
+              setDetectionResult("No matching person found in database");
+            }
           } catch (error) {
             setDetectionResult("No matching person found in database");
           }

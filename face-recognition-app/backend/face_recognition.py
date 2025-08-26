@@ -11,10 +11,18 @@ def get_face_embedding(frame):
     rgb_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
     
     # DeepFace requires a file or numpy array
-    result = DeepFace.represent(img_path=rgb_frame, model_name="Facenet", enforce_detection=False)
-    
-    embedding = result[0]["embedding"]
-    return np.array(embedding, dtype=np.float32).tolist()
+    result = DeepFace.represent(
+        img_path=rgb_frame,
+        model_name="Facenet",
+        enforce_detection=False,
+        detector_backend="opencv",
+    )
+
+    embedding = np.array(result[0]["embedding"], dtype=np.float32)
+    # L2-normalize for stable distances
+    norm = np.linalg.norm(embedding) + 1e-12
+    embedding = embedding / norm
+    return embedding.tolist()
 
 def recognize_from_webcam():
     cap = cv2.VideoCapture(0)  # open webcam 0
