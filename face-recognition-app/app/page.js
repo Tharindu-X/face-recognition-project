@@ -4,6 +4,12 @@ import { useState, useRef, useCallback } from "react";
 import Image from "next/image";
 import { api } from "../lib/api";
 import WebcamCapture from "@/components/WebcamCapture";
+import { Orbitron } from "next/font/google";
+
+const orbitron = Orbitron({
+  subsets: ["latin"],
+  weight: ["500", "700"], // medium + bold
+});
 
 export default function Home() {
   const [name, setName] = useState("");
@@ -31,20 +37,25 @@ export default function Home() {
       formData.append("file", file);
       formData.append("upload_preset", "face_recognition");
 
-      const cloudinaryResponse = await fetch(`https://api.cloudinary.com/v1_1/drq8ovu6m/image/upload`, {
-        method: "POST",
-        body: formData
-      });
+      const cloudinaryResponse = await fetch(
+        `https://api.cloudinary.com/v1_1/drq8ovu6m/image/upload`,
+        {
+          method: "POST",
+          body: formData,
+        }
+      );
 
       const cloudinaryData = await cloudinaryResponse.json();
-      
+
       if (cloudinaryResponse.ok) {
         try {
           await api.registerPerson(name, file);
         } catch (backendError) {
-          console.log("Backend registration failed, but image uploaded successfully");
+          console.log(
+            "Backend registration failed, but image uploaded successfully"
+          );
         }
-        
+
         setUploadSuccess(true);
         setName("");
         setFile(null);
@@ -61,7 +72,10 @@ export default function Home() {
 
   const onClickRegister = () => {
     if (registerRef.current) {
-      registerRef.current.scrollIntoView({ behavior: "smooth", block: "start" });
+      registerRef.current.scrollIntoView({
+        behavior: "smooth",
+        block: "start",
+      });
     }
   };
 
@@ -86,7 +100,8 @@ export default function Home() {
       const result = await api.detectFace(blob, { timeoutMs: 6000 });
       if (result?.match) {
         const matchedName = result.name ?? "Unknown";
-        const conf = result.confidence != null ? ` (${result.confidence}%)` : "";
+        const conf =
+          result.confidence != null ? ` (${result.confidence}%)` : "";
         setLiveMatch(`${matchedName}${conf}`);
       } else {
         setLiveMatch("No match");
@@ -107,50 +122,118 @@ export default function Home() {
           <div className="flex justify-between items-center py-6">
             <div className="flex items-center space-x-3">
               <div className="w-10 h-10 bg-gradient-to-r from-blue-500 to-purple-600 rounded-lg flex items-center justify-center">
-                <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="w-6 h-6 text-white"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                  strokeWidth={2}
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M2 7V5a3 3 0 013-3h2M22 7V5a3 3 0 00-3-3h-2M2 17v2a3 3 0 003 3h2M22 17v2a3 3 0 01-3 3h-2"
+                  />
+                  <circle
+                    cx="12"
+                    cy="10"
+                    r="3"
+                    stroke="currentColor"
+                    strokeWidth={2}
+                  />
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M7 19a5 5 0 0110 0"
+                  />
                 </svg>
               </div>
-              <h1 className="text-3xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-                Face Recognition
+              <h1
+                className={`text-4xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent ${orbitron.className}`}
+              >
+                FaceTrackr
               </h1>
+
             </div>
             <div className="flex items-center gap-3">
               {!isDetecting ? (
-                <button onClick={() => { setIsDetecting(true); setLiveMatch(""); setLiveError(""); }} className="bg-green-600 text-white py-2 px-4 rounded-lg hover:bg-green-700">Start</button>
+                <button
+                  onClick={() => {
+                    setIsDetecting(true);
+                    setLiveMatch("");
+                    setLiveError("");
+                  }}
+                  className="bg-green-600 text-white py-2 px-4 rounded-lg hover:bg-green-700"
+                >
+                  Start
+                </button>
               ) : (
-                <button onClick={() => { setIsDetecting(false); setLiveMatch(""); setLiveError(""); }} className="bg-red-600 text-white py-2 px-4 rounded-lg hover:bg-red-700">Close</button>
+                <button
+                  onClick={() => {
+                    setIsDetecting(false);
+                    setLiveMatch("");
+                    setLiveError("");
+                  }}
+                  className="bg-red-600 text-white py-2 px-4 rounded-lg hover:bg-red-700"
+                >
+                  Close
+                </button>
               )}
-              <button onClick={onClickRegister} className="bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700">Register</button>
+              <button
+                onClick={onClickRegister}
+                className="bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700"
+              >
+                Register
+              </button>
             </div>
           </div>
         </div>
       </header>
 
       {/* Main Content */}
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 bg-blue-100 mt-5">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
           {/* Hero Live Preview */}
-          <div className="bg-white rounded-2xl shadow-xl p-8 border border-gray-100">
+          <div className=" rounded-2xl shadow-xl p-8 border border-gray-400">
             <div className="text-center mb-8">
-              <h2 className="text-2xl font-bold text-gray-800 mb-2">Live Preview</h2>
-              <p className="text-gray-600">Click Start to open camera. It auto-captures and checks for a registered match.</p>
+              <h2 className="text-2xl font-bold text-gray-800 mb-2">
+                Live Preview
+              </h2>
+              <p className="text-gray-600">
+                Click Start to open camera. It auto-captures and checks for a
+                registered match.
+              </p>
             </div>
             <WebcamCapture active={isDetecting} onCapture={handleAutoCapture} />
             <div className="mt-4 text-center">
               {isDetecting && (
-                <span className="text-sm text-gray-600">
-                  {liveLoading ? "Checking..." : (liveError ? liveError : (liveMatch ? `Match: ${liveMatch}` : "No match yet"))}
+                <span className="text-lg text-gray-800">
+                  {liveLoading
+                    ? "Checking..."
+                    : liveError
+                      ? liveError
+                      : liveMatch
+                        ? `Match: ${liveMatch}`
+                        : "No match yet"}
                 </span>
               )}
             </div>
           </div>
 
           {/* Registration Section */}
-          <div ref={registerRef} className="bg-white rounded-2xl shadow-xl p-8 border border-gray-100">
+          <div
+            ref={registerRef}
+            className="bg-white rounded-2xl shadow-xl p-8 border border-gray-400"
+          >
             <div className="text-center mb-8">
-              <h2 className="text-2xl font-bold text-gray-800 mb-2">Register New Person</h2>
-              <p className="text-gray-600">Upload a photo and enter the person's name to register them in our system</p>
+              <h2 className="text-2xl font-bold text-gray-800 mb-2">
+                Register New Person
+              </h2>
+              <p className="text-gray-600">
+                Upload a photo and enter the person's name to register them in
+                our system
+              </p>
             </div>
 
             <div className="space-y-6">
@@ -162,7 +245,7 @@ export default function Home() {
                 <input
                   type="text"
                   placeholder="Enter person's full name"
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+                  className="text-gray-800 w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                 />
@@ -183,8 +266,18 @@ export default function Home() {
                   />
                   <label htmlFor="file-upload" className="cursor-pointer">
                     <div className="space-y-2">
-                      <svg className="mx-auto h-12 w-12 text-gray-400" stroke="currentColor" fill="none" viewBox="0 0 48 48">
-                        <path d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8m-12 4h.02" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" />
+                      <svg
+                        className="mx-auto h-12 w-12 text-gray-400"
+                        stroke="currentColor"
+                        fill="none"
+                        viewBox="0 0 48 48"
+                      >
+                        <path
+                          d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8m-12 4h.02"
+                          strokeWidth={2}
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                        />
                       </svg>
                       <div className="text-sm text-gray-600">
                         <span className="font-medium text-blue-600 hover:text-blue-500">
@@ -192,7 +285,9 @@ export default function Home() {
                         </span>{" "}
                         or drag and drop
                       </div>
-                      <p className="text-xs text-gray-500">PNG, JPG, GIF up to 10MB</p>
+                      <p className="text-xs text-gray-500">
+                        PNG, JPG, GIF up to 10MB
+                      </p>
                     </div>
                   </label>
                 </div>
@@ -211,9 +306,25 @@ export default function Home() {
               >
                 {isUploading ? (
                   <div className="flex items-center justify-center">
-                    <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    <svg
+                      className="animate-spin -ml-1 mr-3 h-5 w-5 text-white"
+                      xmlns="http://www.w3.org/2000/svg"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                    >
+                      <circle
+                        className="opacity-25"
+                        cx="12"
+                        cy="12"
+                        r="10"
+                        stroke="currentColor"
+                        strokeWidth="4"
+                      ></circle>
+                      <path
+                        className="opacity-75"
+                        fill="currentColor"
+                        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                      ></path>
                     </svg>
                     Uploading...
                   </div>
@@ -226,8 +337,16 @@ export default function Home() {
               {uploadSuccess && (
                 <div className="bg-green-50 border border-green-200 rounded-lg p-4">
                   <div className="flex">
-                    <svg className="h-5 w-5 text-green-400" fill="currentColor" viewBox="0 0 20 20">
-                      <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                    <svg
+                      className="h-5 w-5 text-green-400"
+                      fill="currentColor"
+                      viewBox="0 0 20 20"
+                    >
+                      <path
+                        fillRule="evenodd"
+                        d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                        clipRule="evenodd"
+                      />
                     </svg>
                     <div className="ml-3">
                       <p className="text-sm font-medium text-green-800">
