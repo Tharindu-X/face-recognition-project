@@ -19,21 +19,29 @@ export const api = {
     return await response.json();
   },
 
-  // Detect face from webcam image
-  async detectFace(imageBlob) {
-    const formData = new FormData();
-    formData.append('image', imageBlob);
+  // Detect face from webcam image with timeout
+  async detectFace(imageBlob, { timeoutMs = 8000 } = {}) {
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), timeoutMs);
 
-    const response = await fetch(`${API_BASE_URL}/detect`, {
-      method: 'POST',
-      body: formData,
-    });
+    try {
+      const formData = new FormData();
+      formData.append('image', imageBlob);
 
-    if (!response.ok) {
-      throw new Error('Failed to detect face');
+      const response = await fetch(`${API_BASE_URL}/detect`, {
+        method: 'POST',
+        body: formData,
+        signal: controller.signal,
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to detect face');
+      }
+
+      return await response.json();
+    } finally {
+      clearTimeout(timer);
     }
-
-    return await response.json();
   },
 
   // Get video stream for real-time detection

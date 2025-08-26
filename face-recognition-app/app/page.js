@@ -1,8 +1,9 @@
 "use client";
 
-import { useState, useRef } from "react";
+import { useState, useRef, useCallback } from "react";
 import Image from "next/image";
 import { api } from "../lib/api";
+import WebcamCapture from "@/components/WebcamCapture";
 
 export default function Home() {
   const [name, setName] = useState("");
@@ -10,9 +11,11 @@ export default function Home() {
   const [isUploading, setIsUploading] = useState(false);
   const [uploadSuccess, setUploadSuccess] = useState(false);
   const [isDetecting, setIsDetecting] = useState(false);
-  const [detectionResult, setDetectionResult] = useState("");
-  const videoRef = useRef(null);
-  const canvasRef = useRef(null);
+  const [liveMatch, setLiveMatch] = useState("");
+  const [liveLoading, setLiveLoading] = useState(false);
+  const [liveError, setLiveError] = useState("");
+  const inFlightRef = useRef(false);
+  const registerRef = useRef(null);
 
   const handleUpload = async () => {
     if (!name || !file) {
@@ -24,7 +27,6 @@ export default function Home() {
     setUploadSuccess(false);
 
     try {
-      // First upload to Cloudinary
       const formData = new FormData();
       formData.append("file", file);
       formData.append("upload_preset", "face_recognition");
@@ -37,7 +39,6 @@ export default function Home() {
       const cloudinaryData = await cloudinaryResponse.json();
       
       if (cloudinaryResponse.ok) {
-        // Then register with our backend
         try {
           await api.registerPerson(name, file);
         } catch (backendError) {
@@ -58,71 +59,45 @@ export default function Home() {
     }
   };
 
-  const startDetection = async () => {
-    setIsDetecting(true);
-    setDetectionResult("");
+  const onClickRegister = () => {
+    if (registerRef.current) {
+      registerRef.current.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
+  };
 
+  const dataURLToBlob = (dataUrl) => {
+    const arr = dataUrl.split(",");
+    const mime = arr[0].match(/:(.*?);/)[1];
+    const bstr = atob(arr[1]);
+    let n = bstr.length;
+    const u8arr = new Uint8Array(n);
+    while (n--) u8arr[n] = bstr.charCodeAt(n);
+    return new Blob([u8arr], { type: mime });
+  };
+
+  const handleAutoCapture = useCallback(async (dataUrl) => {
+    if (inFlightRef.current) return; // skip overlapping calls
+    inFlightRef.current = true;
+    setLiveLoading(true);
+    setLiveMatch("");
+    setLiveError("");
     try {
-      const stream = await navigator.mediaDevices.getUserMedia({ 
-        video: { 
-          width: 640, 
-          height: 480,
-          facingMode: "user"
-        } 
-      });
-      
-      if (videoRef.current) {
-        videoRef.current.srcObject = stream;
+      const blob = dataURLToBlob(dataUrl);
+      const result = await api.detectFace(blob, { timeoutMs: 6000 });
+      if (result?.match) {
+        const matchedName = result.name ?? "Unknown";
+        const conf = result.confidence != null ? ` (${result.confidence}%)` : "";
+        setLiveMatch(`${matchedName}${conf}`);
+      } else {
+        setLiveMatch("No match");
       }
-    } catch (error) {
-      alert("Unable to access webcam. Please check permissions.");
-      setIsDetecting(false);
+    } catch (e) {
+      setLiveError("Detection failed or timed out");
+    } finally {
+      setLiveLoading(false);
+      inFlightRef.current = false;
     }
-  };
-
-  const stopDetection = () => {
-    if (videoRef.current && videoRef.current.srcObject) {
-      const tracks = videoRef.current.srcObject.getTracks();
-      tracks.forEach(track => track.stop());
-      videoRef.current.srcObject = null;
-    }
-    setIsDetecting(false);
-    setDetectionResult("");
-  };
-
-  const captureAndDetect = async () => {
-    if (videoRef.current && canvasRef.current) {
-      const video = videoRef.current;
-      const canvas = canvasRef.current;
-      const context = canvas.getContext('2d');
-      
-      canvas.width = video.videoWidth;
-      canvas.height = video.videoHeight;
-      context.drawImage(video, 0, 0);
-      
-      setDetectionResult("Face detected! Processing...");
-      
-      try {
-        // Convert canvas to blob
-        canvas.toBlob(async (blob) => {
-          try {
-            const result = await api.detectFace(blob);
-            if (result?.match) {
-              const name = result.name ?? "Unknown";
-              const confidence = result.confidence ?? 0;
-              setDetectionResult(`Person identified: ${name} (${confidence}% confidence)`);
-            } else {
-              setDetectionResult("No matching person found in database");
-            }
-          } catch (error) {
-            setDetectionResult("No matching person found in database");
-          }
-        }, 'image/jpeg');
-      } catch (error) {
-        setDetectionResult("Detection failed. Please try again.");
-      }
-    }
-  };
+  }, []);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">
@@ -137,11 +112,16 @@ export default function Home() {
                 </svg>
               </div>
               <h1 className="text-3xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-                Face Recognition
+                VisageAI
               </h1>
             </div>
-            <div className="text-sm text-gray-500">
-              AI-Powered Face Detection & Recognition
+            <div className="flex items-center gap-3">
+              {!isDetecting ? (
+                <button onClick={() => { setIsDetecting(true); setLiveMatch(""); setLiveError(""); }} className="bg-green-600 text-white py-2 px-4 rounded-lg hover:bg-green-700">Start</button>
+              ) : (
+                <button onClick={() => { setIsDetecting(false); setLiveMatch(""); setLiveError(""); }} className="bg-red-600 text-white py-2 px-4 rounded-lg hover:bg-red-700">Close</button>
+              )}
+              <button onClick={onClickRegister} className="bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700">Register</button>
             </div>
           </div>
         </div>
@@ -150,9 +130,24 @@ export default function Home() {
       {/* Main Content */}
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
-          
-          {/* Registration Section */}
+          {/* Hero Live Preview */}
           <div className="bg-white rounded-2xl shadow-xl p-8 border border-gray-100">
+            <div className="text-center mb-8">
+              <h2 className="text-2xl font-bold text-gray-800 mb-2">Live Preview</h2>
+              <p className="text-gray-600">Click Start to open camera. It auto-captures and checks for a registered match.</p>
+            </div>
+            <WebcamCapture active={isDetecting} onCapture={handleAutoCapture} />
+            <div className="mt-4 text-center">
+              {isDetecting && (
+                <span className="text-sm text-gray-600">
+                  {liveLoading ? "Checking..." : (liveError ? liveError : (liveMatch ? `Match: ${liveMatch}` : "No match yet"))}
+                </span>
+              )}
+            </div>
+          </div>
+
+          {/* Registration Section */}
+          <div ref={registerRef} className="bg-white rounded-2xl shadow-xl p-8 border border-gray-100">
             <div className="text-center mb-8">
               <h2 className="text-2xl font-bold text-gray-800 mb-2">Register New Person</h2>
               <p className="text-gray-600">Upload a photo and enter the person's name to register them in our system</p>
@@ -240,94 +235,6 @@ export default function Home() {
                       </p>
                       <p className="text-sm text-green-700 mt-1">
                         The person has been registered in our system.
-                      </p>
-                    </div>
-                  </div>
-                </div>
-              )}
-            </div>
-          </div>
-
-          {/* Face Detection Section */}
-          <div className="bg-white rounded-2xl shadow-xl p-8 border border-gray-100">
-            <div className="text-center mb-8">
-              <h2 className="text-2xl font-bold text-gray-800 mb-2">Face Detection</h2>
-              <p className="text-gray-600">Use your webcam to detect and identify registered persons</p>
-            </div>
-
-            <div className="space-y-6">
-              {/* Webcam Display */}
-              <div className="relative">
-                <div className="bg-gray-100 rounded-lg overflow-hidden aspect-video flex items-center justify-center">
-                  {isDetecting ? (
-                    <video
-                      ref={videoRef}
-                      autoPlay
-                      playsInline
-                      className="w-full h-full object-cover"
-                    />
-                  ) : (
-                    <div className="text-center text-gray-500">
-                      <svg className="mx-auto h-16 w-16 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
-                      </svg>
-                      <p>Click "Start Detection" to activate webcam</p>
-                    </div>
-                  )}
-                </div>
-                <canvas ref={canvasRef} className="hidden" />
-              </div>
-
-              {/* Detection Controls */}
-              <div className="flex space-x-4">
-                {!isDetecting ? (
-                  <button
-                    onClick={startDetection}
-                    className="flex-1 bg-gradient-to-r from-green-500 to-emerald-600 text-white py-3 px-6 rounded-lg font-medium hover:from-green-600 hover:to-emerald-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 transition-all duration-200"
-                  >
-                    <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14.828 14.828a4 4 0 01-5.656 0M9 10h1m4 0h1m-6 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                    </svg>
-                    Start Detection
-                  </button>
-                ) : (
-                  <>
-                    <button
-                      onClick={captureAndDetect}
-                      className="flex-1 bg-gradient-to-r from-blue-500 to-indigo-600 text-white py-3 px-6 rounded-lg font-medium hover:from-blue-600 hover:to-indigo-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-all duration-200"
-                    >
-                      <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" />
-                      </svg>
-                      Capture & Detect
-                    </button>
-                    <button
-                      onClick={stopDetection}
-                      className="flex-1 bg-gradient-to-r from-red-500 to-pink-600 text-white py-3 px-6 rounded-lg font-medium hover:from-red-600 hover:to-pink-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 transition-all duration-200"
-                    >
-                      <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                      </svg>
-                      Stop
-                    </button>
-                  </>
-                )}
-              </div>
-
-              {/* Detection Result */}
-              {detectionResult && (
-                <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                  <div className="flex">
-                    <svg className="h-5 w-5 text-blue-400" fill="currentColor" viewBox="0 0 20 20">
-                      <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
-                    </svg>
-                    <div className="ml-3">
-                      <p className="text-sm font-medium text-blue-800">
-                        Detection Result
-                      </p>
-                      <p className="text-sm text-blue-700 mt-1">
-                        {detectionResult}
                       </p>
                     </div>
                   </div>
