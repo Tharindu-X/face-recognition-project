@@ -38,7 +38,14 @@ export const api = {
         throw new Error('Failed to detect face');
       }
 
-      return await response.json();
+      const raw = await response.json();
+      // Normalize backend response to a stable shape
+      return {
+        match: !!raw.found,
+        name: raw.name,
+        confidence: typeof raw.confidence === 'number' ? Math.round(raw.confidence) : undefined,
+        raw,
+      };
     } finally {
       clearTimeout(timer);
     }

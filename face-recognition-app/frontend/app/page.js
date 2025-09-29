@@ -3,7 +3,8 @@
 import { useState, useRef, useCallback } from "react";
 import Image from "next/image";
 import { api } from "../lib/api";
-import WebcamCapture from "@/components/WebcamCapture";
+import MultiAngleRegistration from "@/components/MultiAngleRegistration";
+import RealTimeDetection from "@/components/RealTimeDetection";
 import { Orbitron } from "next/font/google";
 
 const orbitron = Orbitron({
@@ -13,62 +14,17 @@ const orbitron = Orbitron({
 
 export default function Home() {
   const [name, setName] = useState("");
-  const [file, setFile] = useState(null);
-  const [isUploading, setIsUploading] = useState(false);
   const [uploadSuccess, setUploadSuccess] = useState(false);
   const [isDetecting, setIsDetecting] = useState(false);
   const [liveMatch, setLiveMatch] = useState("");
   const [liveLoading, setLiveLoading] = useState(false);
   const [liveError, setLiveError] = useState("");
   const inFlightRef = useRef(false);
+  // Real-time detection only
   const registerRef = useRef(null);
+  const [showMultiAngleRegistration, setShowMultiAngleRegistration] = useState(false);
 
-  const handleUpload = async () => {
-    if (!name || !file) {
-      alert("Please enter a name and select an image!");
-      return;
-    }
-
-    setIsUploading(true);
-    setUploadSuccess(false);
-
-    try {
-      const formData = new FormData();
-      formData.append("file", file);
-      formData.append("upload_preset", "face_recognition");
-
-      const cloudinaryResponse = await fetch(
-        `https://api.cloudinary.com/v1_1/drq8ovu6m/image/upload`,
-        {
-          method: "POST",
-          body: formData,
-        }
-      );
-
-      const cloudinaryData = await cloudinaryResponse.json();
-
-      if (cloudinaryResponse.ok) {
-        try {
-          await api.registerPerson(name, file);
-        } catch (backendError) {
-          console.log(
-            "Backend registration failed, but image uploaded successfully"
-          );
-        }
-
-        setUploadSuccess(true);
-        setName("");
-        setFile(null);
-        setTimeout(() => setUploadSuccess(false), 3000);
-      } else {
-        alert("Upload failed. Please try again.");
-      }
-    } catch (error) {
-      alert("Upload failed. Please try again.");
-    } finally {
-      setIsUploading(false);
-    }
-  };
+  // Manual single-image registration is removed; only Face ID-style registration is supported.
 
   const onClickRegister = () => {
     if (registerRef.current) {
@@ -79,40 +35,33 @@ export default function Home() {
     }
   };
 
-  const dataURLToBlob = (dataUrl) => {
-    const arr = dataUrl.split(",");
-    const mime = arr[0].match(/:(.*?);/)[1];
-    const bstr = atob(arr[1]);
-    let n = bstr.length;
-    const u8arr = new Uint8Array(n);
-    while (n--) u8arr[n] = bstr.charCodeAt(n);
-    return new Blob([u8arr], { type: mime });
+  const handleMultiAngleRegistration = () => {
+    if (!name) {
+      alert("Please enter a name first");
+      return;
+    }
+    setShowMultiAngleRegistration(true);
   };
 
-  const handleAutoCapture = useCallback(async (dataUrl) => {
-    if (inFlightRef.current) return; // skip overlapping calls
-    inFlightRef.current = true;
-    setLiveLoading(true);
-    setLiveMatch("");
-    setLiveError("");
-    try {
-      const blob = dataURLToBlob(dataUrl);
-      const result = await api.detectFace(blob, { timeoutMs: 6000 });
-      if (result?.match) {
-        const matchedName = result.name ?? "Unknown";
-        const conf =
-          result.confidence != null ? ` (${result.confidence}%)` : "";
-        setLiveMatch(`${matchedName}${conf}`);
-      } else {
-        setLiveMatch("No match");
-      }
-    } catch (e) {
-      setLiveError("Detection failed or timed out");
-    } finally {
-      setLiveLoading(false);
-      inFlightRef.current = false;
+  const handleMultiAngleComplete = (result) => {
+    setShowMultiAngleRegistration(false);
+    setUploadSuccess(true);
+    // Start real-time detection and show the registered name once camera is on
+    const justRegisteredName = result?.name || name;
+    // Delay a bit so background DB insert becomes searchable
+    setTimeout(() => setIsDetecting(true), 1500);
+    if (justRegisteredName) {
+      setLiveMatch(`${justRegisteredName} (registered)`);
     }
-  }, []);
+    setName("");
+    setTimeout(() => setUploadSuccess(false), 5000);
+  };
+
+  const handleMultiAngleCancel = () => {
+    setShowMultiAngleRegistration(false);
+  };
+
+  // Manual capture removed
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">
@@ -201,11 +150,17 @@ export default function Home() {
                 Live Preview
               </h2>
               <p className="text-gray-600">
-                Click Start to open camera. It auto-captures and checks for a
-                registered match.
+                Click Start to open camera. Choose between auto-detection or manual capture with detailed recognition.
               </p>
             </div>
-            <WebcamCapture active={isDetecting} onCapture={handleAutoCapture} />
+            {/* Camera Component - Real-time only */}
+            <RealTimeDetection 
+              isActive={isDetecting} 
+              onPersonDetected={(personData) => {
+                setLiveMatch(`${personData.name} (${personData.confidence}%)`);
+                setLiveError("");
+              }}
+            />
             <div className="mt-4 text-center">
               {isDetecting && (
                 <span className="text-lg text-gray-800">
@@ -221,18 +176,18 @@ export default function Home() {
             </div>
           </div>
 
-          {/* Registration Section */}
+          {/* Registration Section (Face ID-style only) */}
           <div
             ref={registerRef}
             className="bg-white rounded-2xl shadow-xl p-8 border border-gray-400"
           >
             <div className="text-center mb-8">
               <h2 className="text-2xl font-bold text-gray-800 mb-2">
-                Register New Person
+                Register New Person (Face ID)
               </h2>
               <p className="text-gray-600">
-                Upload a photo and enter the person's name to register them in
-                our system
+                Enter the person's name and complete the Face ID-style setup.
+                No manual image upload is needed.
               </p>
             </div>
 
@@ -250,87 +205,13 @@ export default function Home() {
                   onChange={(e) => setName(e.target.value)}
                 />
               </div>
-
-              {/* File Upload */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Profile Photo
-                </label>
-                <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-blue-400 transition-colors duration-200">
-                  <input
-                    type="file"
-                    accept="image/*"
-                    className="hidden"
-                    id="file-upload"
-                    onChange={(e) => setFile(e.target.files[0])}
-                  />
-                  <label htmlFor="file-upload" className="cursor-pointer">
-                    <div className="space-y-2">
-                      <svg
-                        className="mx-auto h-12 w-12 text-gray-400"
-                        stroke="currentColor"
-                        fill="none"
-                        viewBox="0 0 48 48"
-                      >
-                        <path
-                          d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8m-12 4h.02"
-                          strokeWidth={2}
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                        />
-                      </svg>
-                      <div className="text-sm text-gray-600">
-                        <span className="font-medium text-blue-600 hover:text-blue-500">
-                          Click to upload
-                        </span>{" "}
-                        or drag and drop
-                      </div>
-                      <p className="text-xs text-gray-500">
-                        PNG, JPG, GIF up to 10MB
-                      </p>
-                    </div>
-                  </label>
-                </div>
-                {file && (
-                  <div className="mt-2 text-sm text-green-600">
-                    ✓ Selected: {file.name}
-                  </div>
-                )}
-              </div>
-
-              {/* Upload Button */}
+              {/* Start Face ID Setup */}
               <button
-                onClick={handleUpload}
-                disabled={isUploading || !name || !file}
-                className="w-full bg-gradient-to-r from-blue-500 to-purple-600 text-white py-3 px-6 rounded-lg font-medium hover:from-blue-600 hover:to-purple-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200"
+                onClick={handleMultiAngleRegistration}
+                disabled={!name}
+                className="w-full bg-gradient-to-r from-purple-500 to-pink-600 text-white py-3 px-6 rounded-lg font-medium hover:from-purple-600 hover:to-pink-700 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200"
               >
-                {isUploading ? (
-                  <div className="flex items-center justify-center">
-                    <svg
-                      className="animate-spin -ml-1 mr-3 h-5 w-5 text-white"
-                      xmlns="http://www.w3.org/2000/svg"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                    >
-                      <circle
-                        className="opacity-25"
-                        cx="12"
-                        cy="12"
-                        r="10"
-                        stroke="currentColor"
-                        strokeWidth="4"
-                      ></circle>
-                      <path
-                        className="opacity-75"
-                        fill="currentColor"
-                        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                      ></path>
-                    </svg>
-                    Uploading...
-                  </div>
-                ) : (
-                  "Register Person"
-                )}
+                📱 Start Face ID Setup
               </button>
 
               {/* Success Message */}
@@ -372,6 +253,15 @@ export default function Home() {
           </div>
         </div>
       </footer>
+
+      {/* Multi-Angle Registration Modal */}
+      {showMultiAngleRegistration && (
+        <MultiAngleRegistration
+          personName={name}
+          onComplete={handleMultiAngleComplete}
+          onCancel={handleMultiAngleCancel}
+        />
+      )}
     </div>
   );
 }
