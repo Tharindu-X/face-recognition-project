@@ -162,7 +162,8 @@ export default function RealTimeDetection({ onPersonDetected, isActive }) {
     const face = landmarks[0];
     
     // Draw face bounding box with detection status color
-    const detectionColor = detectedPerson ? "#10b981" : "#f59e0b";
+    // Neon colors
+    const detectionColor = detectedPerson ? "#34d399" /* emerald-400 */ : "#22d3ee" /* cyan-400 */;
     
     // Calculate face bounds
     let minX = 1, maxX = 0, minY = 1, maxY = 0;
@@ -178,10 +179,38 @@ export default function RealTimeDetection({ onPersonDetected, isActive }) {
     const width = (maxX - minX) * canvas.width;
     const height = (maxY - minY) * canvas.height;
 
-    // Draw face bounding box
+    // Neon corner brackets instead of full box
+    ctx.save();
     ctx.strokeStyle = detectionColor;
-    ctx.lineWidth = 3;
-    ctx.strokeRect(x, y, width, height);
+    ctx.lineWidth = 4;
+    ctx.shadowColor = detectionColor;
+    ctx.shadowBlur = 12;
+    const corner = Math.min(24, Math.min(width, height) * 0.15);
+    // top-left
+    ctx.beginPath();
+    ctx.moveTo(x, y + corner);
+    ctx.lineTo(x, y);
+    ctx.lineTo(x + corner, y);
+    ctx.stroke();
+    // top-right
+    ctx.beginPath();
+    ctx.moveTo(x + width - corner, y);
+    ctx.lineTo(x + width, y);
+    ctx.lineTo(x + width, y + corner);
+    ctx.stroke();
+    // bottom-left
+    ctx.beginPath();
+    ctx.moveTo(x, y + height - corner);
+    ctx.lineTo(x, y + height);
+    ctx.lineTo(x + corner, y + height);
+    ctx.stroke();
+    // bottom-right
+    ctx.beginPath();
+    ctx.moveTo(x + width - corner, y + height);
+    ctx.lineTo(x + width, y + height);
+    ctx.lineTo(x + width, y + height - corner);
+    ctx.stroke();
+    ctx.restore();
 
     // Draw key facial points
     ctx.fillStyle = detectionColor;
@@ -190,7 +219,7 @@ export default function RealTimeDetection({ onPersonDetected, isActive }) {
       const point = face[pointIndex];
       if (point) {
         ctx.beginPath();
-        ctx.arc(point.x * canvas.width, point.y * canvas.height, 2, 0, Math.PI * 2);
+        ctx.arc(point.x * canvas.width, point.y * canvas.height, 2.4, 0, Math.PI * 2);
         ctx.fill();
       }
     });
@@ -202,21 +231,32 @@ export default function RealTimeDetection({ onPersonDetected, isActive }) {
   };
 
   const drawDetectionOverlay = (ctx, personData, canvasWidth, canvasHeight) => {
-    const overlayHeight = 80;
+    const overlayHeight = 86;
     const overlayY = canvasHeight - overlayHeight;
     
     // Semi-transparent background
-    ctx.fillStyle = "rgba(16, 185, 129, 0.9)";
+    ctx.fillStyle = detectedPerson ? "rgba(52, 211, 153, 0.12)" : "rgba(34, 211, 238, 0.10)";
     ctx.fillRect(0, overlayY, canvasWidth, overlayHeight);
     
+    // Border line glow
+    ctx.save();
+    ctx.strokeStyle = detectedPerson ? "#34d399" : "#22d3ee";
+    ctx.shadowColor = ctx.strokeStyle;
+    ctx.shadowBlur = 10;
+    ctx.beginPath();
+    ctx.moveTo(0, overlayY);
+    ctx.lineTo(canvasWidth, overlayY);
+    ctx.stroke();
+    ctx.restore();
+
     // Person name with large font
-    ctx.fillStyle = "white";
-    ctx.font = `bold ${Math.min(canvasWidth * 0.08, 48)}px Arial`;
+    ctx.fillStyle = "#e2e8f0";
+    ctx.font = `bold ${Math.min(canvasWidth * 0.08, 42)}px Arial`;
     ctx.textAlign = "center";
     ctx.fillText(personData.name, canvasWidth / 2, overlayY + 35);
     
     // Confidence score
-    ctx.font = `${Math.min(canvasWidth * 0.04, 24)}px Arial`;
+    ctx.font = `${Math.min(canvasWidth * 0.04, 20)}px Arial`;
     ctx.fillText(
       `${personData.confidence}% confident`, 
       canvasWidth / 2, 
@@ -224,7 +264,7 @@ export default function RealTimeDetection({ onPersonDetected, isActive }) {
     );
     
     // Decorative elements
-    ctx.strokeStyle = "white";
+    ctx.strokeStyle = detectedPerson ? "#34d399" : "#22d3ee";
     ctx.levelWidth = 2;
     ctx.beginPath();
     ctx.moveTo(canvasWidth * 0.2, overlayY + 5);

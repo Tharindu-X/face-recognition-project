@@ -451,22 +451,21 @@ export default function MultiAngleRegistration({ onComplete, onCancel, personNam
   const overallProgress = Math.min(100, Math.round((uniqueCount / targetShotsRef.current) * 100));
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-white rounded-2xl p-8 max-w-4xl w-full mx-4">
+    <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50">
+      <div className="card-neon blue p-8 max-w-4xl w-full mx-4 text-slate-200">
         <div className="text-center mb-6">
-          <h2 className="text-3xl font-bold text-gray-800 mb-2">
-            Multi-Angle Face Registration
+          <h2 className="text-3xl font-bold text-sky-300 mb-2">
+            Secure Face Enrollment
           </h2>
-          <p className="text-gray-600 mb-4">
-            Registering: <span className="font-semibold">{personName}</span>
+          <p className="text-slate-400 mb-4">
+            Registering: <span className="font-semibold text-slate-200">{personName}</span>
           </p>
-          {/* Overall progress hidden by request */}
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gutter-8">
           {/* Camera Feed */}
           <div className="space-y-4">
-            <div className="relative bg-gray-100 rounded-lg overflow-hidden">
+            <div className="relative rounded-lg overflow-hidden border border-slate-700/60 bg-slate-900/40">
               {!isProcessing ? (
                 <>
                   <video 
@@ -483,8 +482,8 @@ export default function MultiAngleRegistration({ onComplete, onCancel, personNam
               ) : (
                 <div className="flex items-center justify-center h-64">
                   <div className="text-center">
-                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-                    <p className="text-gray-600">Processing registration...</p>
+                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-sky-400 mx-auto mb-4"></div>
+                    <p className="text-slate-300">Processing registration...</p>
                   </div>
                 </div>
               )}
@@ -492,16 +491,16 @@ export default function MultiAngleRegistration({ onComplete, onCancel, personNam
 
           {/* Status with counter */}
             <div className="text-center">
-              <h3 className="text-xl font-semibold text-gray-800 mb-2">Capturing automatically</h3>
-              <p className="text-gray-600 mb-1">{instructions}</p>
-              <p className="text-gray-800 font-semibold">{Math.min(uniqueCount, targetShotsRef.current)} / {targetShotsRef.current}</p>
+              <h3 className="text-xl font-semibold text-sky-300 mb-2">Capturing automatically</h3>
+              <p className="text-slate-400 mb-1">{instructions}</p>
+              <p className="text-emerald-300 font-semibold">{Math.min(uniqueCount, targetShotsRef.current)} / {targetShotsRef.current}</p>
             </div>
           </div>
 
           {/* Tips */}
           <div className="space-y-3">
-            <h3 className="text-lg font-semibold text-gray-800">Tips</h3>
-            <ul className="list-disc pl-6 text-sm text-gray-700 space-y-1">
+            <h3 className="text-lg font-semibold text-slate-200">Tips</h3>
+            <ul className="list-disc pl-6 text-sm text-slate-400 space-y-1">
               <li>Hold phone/face steady; slowly sweep left → right and up ↕ down</li>
               <li>Ensure your face fills at least 10% of the frame</li>
               <li>Avoid backlight; keep your face evenly lit</li>
@@ -513,7 +512,7 @@ export default function MultiAngleRegistration({ onComplete, onCancel, personNam
         <div className="flex justify-end space-x-4 mt-8">
           <button
             onClick={onCancel}
-            className="px-6 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50"
+            className="px-6 py-2 border border-slate-600 rounded-lg text-slate-300 hover:bg-slate-800/50"
           >
             Cancel
           </button>
@@ -521,7 +520,7 @@ export default function MultiAngleRegistration({ onComplete, onCancel, personNam
             <button
               onClick={captureAllAngles}
               disabled={isProcessing}
-              className="px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50"
+              className="btn-neon green px-6 py-2 bg-emerald-500 text-white rounded-lg disabled:opacity-50"
             >
               Complete Registration
             </button>
@@ -530,7 +529,7 @@ export default function MultiAngleRegistration({ onComplete, onCancel, personNam
             <button
               onClick={captureAllAngles}
               disabled={isProcessing}
-              className="px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50"
+              className="btn-neon green px-6 py-2 bg-emerald-500 text-white rounded-lg disabled:opacity-50"
             >
               Submitting 10 images...
             </button>
