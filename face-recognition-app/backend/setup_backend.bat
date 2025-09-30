@@ -50,3 +50,4 @@ echo 1. Run: face_recognition_venv\Scripts\activate.bat
 echo 2. Run: python app.py
 echo.
 pause
+

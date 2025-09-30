@@ -56,3 +56,4 @@ echo Wait for all services to start up, then open:
 echo http://localhost:3000
 echo.
 pause
+

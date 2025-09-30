@@ -1,290 +1,155 @@
-# 📱 Advanced Face Recognition System with iPhone Face ID-Like Features
+# 📱 Advanced Face Recognition System
 
-A modern, AI-powered face recognition web application that provides automated registration and real-time detection with multi-angle face capture similar to iPhone Face ID.
+A modern face recognition web app with multi-angle enrollment and real-time detection.
 
-## ✨ Key Features
+## ✨ Features
 
-### 🎯 **Automated Face Registration (iPhone Face ID-Style)**
-- **Multi-Angle Capture**: Captures faces from 5 different angles (front, left profile, right profile, chin up, chin down)
-- **Real-Time Face Analysis**: Analyzes face quality, angles, and pose in real-time
-- **Interactive Guidance**: Provides step-by-step instructions with visual feedback
-- **Quality Assurance**: Automatically validates each angle before capture
-- **3D Face Modeling**: Creates comprehensive face models from multiple angles
+- **Multi-angle enrollment**: Capture up to 10 angles; embeddings averaged server-side
+- **Real-time detection**: Periodic single-frame recognition from webcam
+- **Vector search**: Milvus similarity search (Inner Product over normalized vectors)
+- **Privacy**: Only embeddings are stored; raw images are not persisted
 
-### 🔍 **Real-Time Detection**
-- **Live Camera Detection**: Continuous face detection and recognition
-- **Confidence Scoring**: Shows recognition confidence percentage
-- **Visual Overlays**: Face bounding boxes with color-coded detection status
-- **Detection History**: Keeps track of recent recognitions
-- **Username Display**: Prominent display of detected person's name
+## 🧱 Tech Stack
 
-### 🧠 **Advanced AI Technology**
-- **DeepFace Integration**: Uses state-of-the-art facial recognition models
-- **Face Embeddings**: High-dimensional vector representations for accurate matching
-- **Quality Analysis**: Evaluates image sharpness, lighting, and pose
-- **Vector Database**: Milvus-powered similarity search for fast recognition
-
-### 📊 **Database & Storage**
-- **Milvus Vector Database**: Industry-leading vector similarity search
-- **Face Embeddings Storage**: 512-dimensional face encodings (NO raw images stored)
-- **Multi-Angle Storage**: Stores face data from multiple orientations
-- **Quality Metrics**: Tracks registration quality scores
-- **Privacy-Focused**: Images processed and discarded immediately, only embeddings stored
+- Backend: Python, Flask, DeepFace (model: VGG-Face, 2622-dim)
+- Vector DB: Milvus 2.x (IVF_FLAT, IP)
+- Frontend: Next.js (App Router), Tailwind CSS, MediaPipe Tasks Vision
+- Docker: `docker-compose.yml` for Milvus + MinIO + etcd
 
 ## 🚀 Quick Start
 
 ### Prerequisites
-- **Python 3.8+** with pip
-- **Node.js 18+** with npm
-- **Docker** (for Milvus vector database)
+- Python 3.8+
+- Node.js 18+
+- Docker Desktop (for Milvus)
 
-### Installation Steps
+### 1) Start Milvus (Docker)
+From `face-recognition-app/`:
+```bash
+docker-compose up -d
+```
 
-1. **Clone the repository**
-   ```bash
-   git clone <repository-url>
-   cd face-recognition-app
-   ```
+### 2) Install backend deps
+```bash
+cd backend
+pip install -r requirements.txt
+```
+Windows helper: run `backend\setup_backend.bat` to create/activate venv and install compatible versions.
 
-2. **Start Milvus Database**
-   ```bash
-   docker-compose up -d
-   ```
-   Wait for Milvus to be ready (about 30 seconds)
+### 3) Install frontend deps
+```bash
+cd ../frontend
+npm install
+```
+Optional: `frontend/.env.local`
+```env
+NEXT_PUBLIC_API_URL=http://localhost:5000
+```
 
-3. **Install Python Dependencies**
-   ```bash
-   cd backend
-   pip install -r requirements.txt
-   ```
+### 4) Start
+- One-liner (Windows, from `face-recognition-app/`):
+```bash
+start_all.bat
+```
+- Manual:
+```bash
+# Terminal 1
+cd backend
+python app.py
 
-4. **Install Frontend Dependencies**
-   ```bash
-   cd ../frontend
-   npm install
-   ```
+# Terminal 2
+cd frontend
+npm run dev
+```
 
-5. **Start the Application**
+### 5) Open
+- Frontend: http://localhost:3000
+- Backend health: http://localhost:5000/health
+- Milvus gRPC: localhost:19530 (no HTTP UI)
 
-   **Windows:**
-   ```bash
-   # Run the all-in-one startup script
-   start_all.bat
-   ```
+## 🧭 UI Walkthrough
 
-   **Manual Start:**
-   ```bash
-   # Terminal 1: Start Python Backend
-   cd backend
-   python app.py
+- Multi-angle enrollment: On the registration screen, enter a name and start. The UI auto-captures ~10 best frames while you slowly sweep your head; they are uploaded as `angle_0..angle_9` to the backend.
+- Real-time detection: Start camera; the app captures single frames periodically and queries `/detect`. A name with confidence appears when matched.
 
-   # Terminal 2: Start Frontend
-   cd frontend
-   npm run dev
-   ```
+## 🔌 API (Backend)
 
-6. **Access the Application**
-   ```
-   Frontend: http://localhost:3000
-   Backend API: http://localhost:5000
-   Milvus: http://localhost:19530
-   ```
+- `GET /health` → `{ ok: true }` when service and Milvus are healthy
+- `POST /register-multi-angle` → form-data
+  - fields: `person_name` (or `name`)
+  - files: `angle_0`, `angle_1`, ... up to 10 images (jpeg/png)
+  - returns: `{ success: true, name, num_images }`
+- `POST /detect` → form-data with `image`
+  - returns: `{ found: boolean, name?: string, confidence?: number }`
 
-## 📱 How to Use
+Admin endpoints:
+- `GET /admin/faces?limit=50` → `{ total, names: [] }`
+- `GET /admin/faces/vector?name=...` → `{ success, name, dim, vector }`
+- `DELETE /admin/faces?name=...` → `{ success, deleted }`
+- `POST /admin/faces/clear` → Drop and recreate collection
 
-### Multi-Angle Registration (iPhone Face ID-Style)
+Notes:
+- Embedding dimension is 2622 (VGG-Face), not 512
+- Similarity uses Inner Product on normalized vectors (cosine-like)
+- There is no `/register`, `/video_feed`, or `/stats` endpoint in the backend
 
-1. **Choose Registration Type**
-   - Select "Multi-Angle (iPhone-like)" radio button
-   - Enter the person's name
-   - Click "📱 Register with Multi-Angle Capture"
+## 🗄️ Data & Index
 
-2. **Follow the Guidance**
-   - The system will guide you through 5 different angles
-   - Position your face according to the on-screen instructions
-   - Wait for the green progress indicator to confirm good positioning
-   - The system automatically captures each angle when optimal
+- Collection name: `faces`
+- Schema: `pk (INT64 auto_id primary)`, `name (VARCHAR)`, `vector (FLOAT_VECTOR dim=2622)`
+- Index: `IVF_FLAT`, metric `IP`, nlist `1024`; query uses nprobe `32`
 
-3. **Angles Required:**
-   - **Front View**: Look directly at the camera
-   - **Left Profile**: Turn your head slightly left
-   - **Right Profile**: Turn your head slightly right
-   - **Chin Up**: Tilt your head up slightly
-   - **Chin Down**: Tilt your head down slightly
+## ⚙️ Environment
 
-4. **Quality Validation**
-   - Each angle is automatically validated for quality
-   - Poor quality angles are automatically skipped
-   - Only high-quality captures are used for registration
+Backend (`app.py`) honors:
+- `MILVUS_HOST` (default `127.0.0.1`)
+- `MILVUS_PORT` (default `19530`)
+- `MILVUS_COLLECTION` (default `faces`)
 
-### Real-Time Detection
+Frontend:
+- `NEXT_PUBLIC_API_URL` (default `http://localhost:5000` if unset)
 
-1. **Select Detection Mode**
-   - Choose "Real-time Detection" for continuous monitoring
-   - Choose "Manual Capture" for on-demand detection
+## 🐳 Docker/Milvus Management
 
-2. **Start Detection**
-   - Click "Start" to activate the camera
-   - Position your face in camera view
-   - System automatically detects and displays your name with confidence
+From `face-recognition-app/`:
+```bash
+docker-compose up -d         # start
+docker-compose logs -f       # follow logs
+docker-compose ps            # list containers
+docker-compose down          # stop
+```
+Volumes are under `volumes/`.
 
-3. **Detection Features**
-   - Face bounding box with color coding
-   - Real-time confidence scoring
-   - Username overlay display
-   - Detection history tracking
+## 🔎 Troubleshooting / FAQ
 
-## 🏗️ Technical Architecture
+- "No matching person found"
+  - Ensure at least one person is enrolled; use multi-angle
+  - Check Docker containers: `docker ps` (Milvus must be running)
+  - Verify backend health: `curl http://localhost:5000/health`
+- Backend import/runtime errors on Windows
+  - Run `backend\setup_backend.bat` to set up a fresh venv
+- Frontend cannot reach backend
+  - Confirm port 5000, set `NEXT_PUBLIC_API_URL`, avoid mixed HTTP/HTTPS
+- Performance/accuracy
+  - Capture in good lighting; keep face ~10–40% of frame; enroll 8–10 angles
 
-### Backend (Python Flask)
+## 📂 Project Structure (excerpt)
+
 ```
 face-recognition-app/
-├── backend/
-│   ├── app.py                 # Main Flask application
-│   ├── requirements.txt       # Python dependencies
-│   └── face_recognition_venv/ # Virtual environment
+├─ backend/
+│  ├─ app.py
+│  ├─ requirements.txt
+│  └─ setup_backend.bat
+├─ frontend/
+│  ├─ app/
+│  ├─ components/
+│  └─ lib/api.js
+├─ docker-compose.yml
+├─ start_all.bat
+└─ volumes/
 ```
-
-### Frontend (Next.js)
-```
-face-recognition-app/
-├── frontend/
-│   ├── app/
-│   │   ├── page.js           # Main application page
-│   │   └── layout.js         # App layout
-│   ├── components/
-│   │   ├── MultiAngleRegistration.js    # iPhone-like registration
-│   │   ├── RealTimeDetection.js         # Live detection
-│   │   ├── WebcamCapture.js            # Manual capture
-│   │   └── UploadForm.js               # Single photo upload
-│   ├── lib/
-│   │   └── api.js                       # API client
-│   └── package.json                    # Dependencies
-```
-
-### Database (Milvus)
-```
-face-recognition-app/
-├── docker-compose.yml         # Milvus deployment
-└── volumes/                   # Database volumes
-```
-
-## 🔧 API Endpoints
-
-### Registration Endpoints
-- **POST /register** - Single photo registration
-- **POST /register-multi-angle** - Multi-angle registration
-
-### Detection Endpoints
-- **POST /detect** - Detect person from image
-- **GET /health** - Health check
-- **GET /stats** - Database statistics
-
-## 🎨 Features Comparison
-
-| Feature | Single Photo | Multi-Angle (iPhone-like) |
-|---------|--------------|---------------------------|
-| Registration Speed | ⚡ Fast | 🔄 Moderate (5x longer) |
-| Accuracy | 📊 Good | 🎯 Excellent |
-| Security | 🔒 Standard | 🛡️ High (spoof-resistant) |
-| User Experience | ✅ Simple | 🌟 Premium |
-| Data Storage | 💾 1 embedding | 💾 5+ embeddings |
-
-## 🔍 Face Recognition Models
-
-- **DeepFace Facenet512**: 512-dimensional face embeddings
-- **MediaPipe Face Landmarks**: Real-time facial feature detection
-- **OpenCV Haar Cascades**: Face detection and quality analysis
-- **Cosine Similarity**: Vector similarity scoring
-
-## 🛠️ Troubleshooting
-
-### Common Issues
-
-1. **"No matching person found"**
-   - Ensure at least one person is registered
-   - Check that Milvus database is running
-   - Verify face quality and lighting
-
-2. **Camera not working**
-   - Grant camera permissions in browser
-   - Ensure HTTPS for production deployments
-   - Check MediaPipe library loading
-
-3. **Backend connection failed**
-   - Verify Python backend is running on port 5000
-   - Check Python dependencies installation
-   - Ensure correct API URLs in frontend
-
-4. **Poor recognition accuracy**
-   - Use multi-angle registration for better results
-   - Ensure good lighting conditions
-   - Avoid extreme angles or distances
-
-### Debugging Steps
-
-1. **Check Services**
-   ```bash
-   # Check Milvus
-   curl http://localhost:19530/health
-   
-   # Check Backend
-   curl http://localhost:5000/health
-   
-   # Check Frontend
-   curl http://localhost:3000
-   ```
-
-2. **View Logs**
-   - Backend logs in terminal
-   - Browser developer console
-   - Docker logs for Milvus
-
-## 🚀 Performance Optimization
-
-### Backend Optimization
-- **Batch Processing**: Process multiple face encodings simultaneously
-- **Connection Pooling**: Optimize database connections
-- **Caching**: Cache face encodings for faster retrieval
-
-### Frontend Optimization
-- **Component Memoization**: Prevent unnecessary re-renders
-- **Image Compression**: Optimize camera capture quality
-- **Lazy Loading**: Load heavy components on demand
-
-## 🔐 Security Considerations
-
-- **Privacy**: Face data stored as non-reconstructable embeddings
-- **Security**: HTTPS for production deployments
-- **Accessibility**: Camera permissions properly requested
-- **Data Retention**: Automatic cleanup of temporary images
-
-## 📈 Future Enhancements
-
-- **3D Face Modeling**: Advanced pose estimation
-- **Anti-Spoofing**: Liveness detection
-- **Age/Gender Detection**: Demographic analysis
-- **Emotion Recognition**: Facial expression analysis
-- **Voice Integration**: Multi-modal authentication
-
-## 🤝 Contributing
-
-1. Fork the repository
-2. Create feature branch
-3. Commit changes
-4. Push to branch
-5. Open Pull Request
 
 ## 📄 License
 
-This project is licensed under the MIT License.
-
-## 🎉 Conclusion
-
-This face recognition system provides iPhone Face ID-like functionality with:
-- **Automated Multi-Angle Registration**: Just like iPhone Face ID setup
-- **Real-Time Detection**: Continuous monitoring with username display
-- **Advanced AI**: DeepFace and vector database integration
-- **Modern UI**: Beautiful, responsive interface
-
-Perfect for access control, attendance tracking, security systems, and user authentication applications!
+MIT
