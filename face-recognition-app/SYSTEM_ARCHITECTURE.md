@@ -7,80 +7,75 @@
 │                    Frontend (Next.js)                       │
 ├─────────────────────────────────────────────────────────────┤
 │  ┌─────────────────┐  ┌─────────────────┐  ┌──────────────┐ │
-│  │ Multi-Angle     │  │ Real-Time       │  │ Manual       │ │
-│  │ Registration    │  │ Detection       │  │ Upload       │ │
+│  │ Real-Time       │  │ Upload (Demo)   │  │ Navbar / UI  │ │
+│  │ Detection       │  │ (Cloudinary)    │  │ Components   │ │
 │  └─────────────────┘  └─────────────────┘  └──────────────┘ │
 └─────────────────────────────────────────────────────────────┘
                               │
                               ▼
 ┌─────────────────────────────────────────────────────────────┐
-│                 REST API (Flask Backend)                   │
+│                 REST API (Flask Backend)                    │
 ├─────────────────────────────────────────────────────────────┤
-│  /register           - Single photo registration           │
-│  /register-multi-angle - Multi-angle registration          │
-│  /detect             - Face recognition                    │
-│  /health             - Health check                        │
-│  /stats              - Database statistics                 │
+│  GET  /health                 - Health check                │
+│  POST /register-multi-angle   - Register aggregated vector  │
+│  POST /detect                 - Recognize from a frame      │
+│  GET  /admin/faces            - List names (no vectors)     │
+│  GET  /admin/faces/vector     - Inspect one vector by name  │
+│  DEL  /admin/faces            - Delete by name              │
+│  POST /admin/faces/clear      - Drop & recreate collection  │
 └─────────────────────────────────────────────────────────────┘
                               │
                               ▼
 ┌─────────────────────────────────────────────────────────────┐
-│              Face Recognition Engine                        │
+│              Face Recognition Engine (in Backend)           │
 ├─────────────────────────────────────────────────────────────┤
-│  ┌─────────────────┐  ┌─────────────────┐  ┌────────────┐   │
-│  │ DeepFace        │  │ Face Quality    │  │ MediaPipe │   │
-│  │ Facenet512      │  │ Analysis        │  │ Landmarks │   │
-│  │ (Face Embeddings│  │ (Sharpness &    │  │ (Real-time │   │
-│  └─────────────────┘  │ Pose Detection) │  │ Detection)│   │
+│  • DeepFace (VGG-Face, 2622-dim, normalized vectors)        │
+│  • OpenCV (resize/align)                                    │
+│  • PIL + NumPy (image handling)                             │
 └─────────────────────────────────────────────────────────────┘
                               │
                               ▼
 ┌─────────────────────────────────────────────────────────────┐
-│               Vector Database (Milvus)                     │
+│               Vector Database (Milvus)                      │
 ├─────────────────────────────────────────────────────────────┤
-│  Collection: face_embeddings                               │
+│  Collection: env MILVUS_COLLECTION (default: "faces")       │
 │  ┌─────────────────────────────────────────────────────────┐│
 │  │ Fields:                                                 ││
-│  │ • user_id (VARCHAR)                                   ││
-│  │ • person_name (VARCHAR)                               ││
-│  │ • embeddings (512-dim FLOAT_VECTOR)                    ││
-│  │ • face_quality_score (FLOAT)                          ││
-│  │ • face_angles (JSON)                                  ││
-│  │ • created_at (TIMESTAMP)                              ││
+│  │ • pk (INT64, primary, auto_id)                          ││
+│  │ • name (VARCHAR)                                        ││
+│  │ • vector (FLOAT_VECTOR, dim=2622)                       ││
+│  │ Index: IVF_FLAT • Metric: Inner Product (on L2-normalized)││
 │  └─────────────────────────────────────────────────────────┘│
 └─────────────────────────────────────────────────────────────┘
 ```
 
 ## Component Interactions
 
-### 1. Multi-Angle Registration Flow
+### 1. Multi-Angle Registration Flow (Backend implemented, UI WIP)
 
 ```mermaid
 sequenceDiagram
-    participant User
-    participant Frontend as Frontend (React)
+    participant Client as Client (Form/Tool)
     participant Backend as Backend (Flask)
-    participant DeepFace as DeepFace AI
+    participant DeepFace as DeepFace (VGG-Face)
     participant Milvus as Milvus DB
     
-    User->>Frontend: Click "Multi-Angle Registration"
-    Frontend->>User: Show camera + guidance UI
-    
-    loop For each angle (5 angles)
-        Frontend->>Frontend: Analyze face pose real-time
-        Frontend->>Backend: Send captured image + angle data
-        Backend->>DeepFace: Extract face embedding
-        DeepFace-->>Backend: Return 512-dim vector
-        Backend->>Backend: Analyze face quality
-        Backend->>Milvus: Store embedding + metadata
-        Milvus-->>Backend: Confirm storage
-        Backend-->>Frontend: Registration result
+    Client->>Backend: POST /register-multi-angle (files angle_0..angle_n, name)
+    loop For each provided image (≤10)
+        Backend->>DeepFace: Extract 2622-dim embedding
+        DeepFace-->>Backend: Normalized vector
     end
-    
-    Frontend->>User: Show completion with quality scores
+    Backend->>Backend: Mean-aggregate and re-normalize
+    Backend->>Milvus: Insert { name, vector }
+    Milvus-->>Backend: Insert ack
+    Backend-->>Client: { success, name, num_images }
 ```
 
-### 2. Real-Time Detection Flow
+Notes:
+- Frontend currently does not call this endpoint; a demo `UploadForm` uploads to Cloudinary only.
+- When UI integration is added, capture multiple angles and submit as `angle_0..angle_9`.
+
+### 2. Real-Time Detection Flow (Implemented end-to-end)
 
 ```mermaid
 sequenceDiagram
@@ -90,121 +85,110 @@ sequenceDiagram
     participant Milvus as Milvus DB
     
     Camera->>Frontend: Continuous video stream
-    Frontend->>Frontend: MediaPipe face detection
+    Frontend->>Frontend: MediaPipe face landmarks overlay
     
-    loop Every 2 seconds
-        Frontend->>Backend: Send face frame
-        Backend->>Milvus: Search similar embeddings
-        Milvus-->>Backend: Return top matches + distances
-        Backend->>Backend: Calculate confidence scores
-        Backend-->>Frontend: Person name + confidence
-        Frontend->>Frontend: Update UI with results
+    loop ~Every 1 second when a face is present
+        Frontend->>Backend: POST /detect (JPEG frame)
+        Backend->>DeepFace: Extract 2622-dim embedding
+        Backend->>Milvus: Search top-1 by IP
+        Milvus-->>Backend: Best match + distance
+        Backend-->>Frontend: { found, name, confidence% }
+        Frontend->>Frontend: Update overlay + history
     end
 ```
+
+Notes:
+- There is no `/video_feed` endpoint; detection uses periodic frame uploads.
+- Frontend applies a 25% confidence threshold before showing a match.
 
 ## Data Flow Architecture
 
 ### Registration Data Flow
 ```
-📷 Camera Input
+📷 Multiple images (angles)
     ↓
-🎯 Pose Detection (MediaPipe)
+🧠 Face Embedding (DeepFace VGG-Face, 2622-dim, normalized)
     ↓
-📊 Quality Analysis (OpenCV + Custom)
+➗ Mean aggregation (re-normalize)
     ↓
-🧠 Face Embedding (DeepFace Facenet512)
-    ↓
-💾 Vector Storage (Milvus)
-    ↓
-📈 Quality Metrics & Metadata
+💾 Milvus insert { name, vector }
 ```
 
 ### Detection Data Flow
 ```
-📷 Live Camera Feed
+📷 Live camera frame (JPEG)
     ↓
-🔍 Face Detection (MediaPipe)
+🧠 Embedding extraction (DeepFace VGG-Face)
     ↓
-🧠 Embedding Extraction (DeepFace)
+🔎 Milvus similarity search (Inner Product on normalized)
     ↓
-🔎 Vector Similarity Search (Milvus Cosine)
+📊 Confidence = distance × 100 (capped 0..100)
     ↓
-📊 Confidence Calculation
-    ↓
-👤 Username Display
+👤 Display name if ≥ threshold (default 25%)
 ```
 
 ## Technical Stack Details
 
 ### Frontend Technologies
-- **Next.js 14**: React framework with App Router
-- **MediaPipe**: Real-time facial pose detection
-- **Tailwind CSS**: Utility-first styling
-- **React Hooks**: State management
+- **Next.js 14**: App Router
+- **MediaPipe Tasks Vision**: Face landmarks and on-canvas overlay
+- **Tailwind CSS**: Styling
+- **React Hooks**: State and effects
 
 ### Backend Technologies
-- **Python 3.8+**: Core language
-- **Flask**: Web framework
-- **DeepFace**: AI face recognition
-- **OpenCV**: Computer vision processing
-- **PIL/Pillow**: Image processing
-- **NumPy**: Numerical computations
+- **Python 3.11+**: Runtime
+- **Flask**: Web framework + CORS
+- **DeepFace (VGG-Face)**: 2622-dim embeddings
+- **OpenCV**: Resize/align; image pre-processing
+- **PIL/Pillow** and **NumPy**: Image and numerical ops
+- **pymilvus**: Milvus client (connections, schema, search)
 
 ### Database Technologies
-- **Milvus**: Vector similarity search database
-- **Docker**: Containerized deployment
-- **512-dimensional vectors**: Face embeddings storage
-- **Cosine similarity**: Distance calculation
+- **Milvus**: IVF_FLAT index, Inner Product metric
+- **Embeddings**: 2622-dim FLOAT_VECTOR (normalized)
+- **Fields**: `pk`, `name`, `vector`
+
+### Configuration (Environment)
+- `MILVUS_HOST` (default `127.0.0.1`)
+- `MILVUS_PORT` (default `19530`)
+- `MILVUS_COLLECTION` (default `faces`)
+- `PORT` (Flask port, default `5000`)
 
 ## Security & Privacy
 
 ### Data Protection
-- **Non-reconstructable embeddings**: Face data stored as vectors only
-- **No raw image storage**: Images processed and discarded immediately
-- **Temporary files**: Auto-cleanup of processing images
-- **HTTPS ready**: Secure transmission support
+- **Vectors only**: No raw face images stored in backend or DB
+- **Transient processing**: Images are processed in-memory and discarded
+- **CORS**: Enabled for frontend integration
 
-### Privacy Features
-- **Anonymous embeddings**: No personally identifiable information in vectors
-- **Quality metrics**: Only technical analysis stored
-- **Configurable retention**: Database cleanup policies
-- **Permission-based**: Camera access properly requested
+### Privacy Notes
+- The demo `UploadForm` posts to Cloudinary for image hosting only and does not register with the backend; remove/replace for production.
 
 ## Performance Characteristics
 
-### Registration Performance
-- **Multi-angle capture**: ~15-30 seconds per person
-- **Face validation**: Real-time quality scoring
-- **Storage efficiency**: ~5-10MB per person (multiple embeddings)
+### Registration
+- Mean aggregation of up to 10 images per person
+- Single vector persisted per `name`
 
-### Detection Performance  
-- **Real-time processing**: 2-second detection intervals
-- **Sub-second recognition**: <500ms average response time
-- **High accuracy**: 95%+ with multi-angle registration
-- **Concurrent users**: Support for multiple simultaneous detections
+### Detection
+- ~1s frame cadence while a face is present
+- Sub-second responses on typical hardware for search top-1
 
 ## Scalability Design
 
 ### Horizontal Scaling
-- **Backend instances**: Multiple Flask workers supported
-- **Database clustering**: Milvus cluster deployment
-- **Load balancing**: Stateless backend architecture
+- Multiple Flask workers behind a load balancer (stateless API)
+- Milvus server/cluster handles vector indexing and search
 
-### Vertical Scaling
-- **GPU acceleration**: DeepFace GPU support ready
-- **Memory optimization**: Efficient vector storage
-- **CPU utilization**: Parallel processing capabilities
+### Vertical/GPU
+- DeepFace can leverage GPU when configured; current setup is CPU by default
 
 ## Future Enhancement Areas
 
-### AI Improvements
-- **3D face modeling**: Enhanced pose estimation
-- **Anti-spoofing**: Liveness detection integration  
-- **Demographic analysis**: Age/gender detection
-- **Emotion recognition**: Facial expression analysis
+### AI/Quality
+- Face quality scoring and pose metadata capture (not implemented yet)
+- Anti-spoofing / liveness checks
 
-### System Enhancements
-- **Real-time streaming**: WebRTC video streams
-- **Mobile optimization**: Progressive Web App features
-- **Cloud deployment**: Kubernetes orchestration
-- **Monitoring**: Comprehensive metrics and alerts
+### Product/UX
+- Frontend UI for multi-angle registration to call `/register-multi-angle`
+- WebRTC streaming (if needed) and/or chunked uploads
